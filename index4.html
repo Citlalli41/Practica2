@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Peluches Chidos</title>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Segoe UI', sans-serif;
+}
+
+body{
+    display:flex;
+    height:100vh;
+    background:#f3e8ff;
+}
+
+/* SIDEBAR */
+.sidebar{
+    width:25%;
+    background:#c084fc;
+    color:white;
+    padding:40px 20px;
+}
+
+.sidebar h2{
+    text-align:center;
+    font-size:28px;
+    margin-bottom:40px;
+}
+
+.sidebar button{
+    width:100%;
+    padding:15px;
+    margin-bottom:15px;
+    background:rgba(255,255,255,0.2);
+    border:none;
+    color:white;
+    font-size:18px;
+    border-radius:10px;
+    cursor:pointer;
+    transition:0.3s;
+}
+
+.sidebar button:hover{
+    background:rgba(255,255,255,0.4);
+}
+
+.content{
+    width:75%;
+    padding:40px;
+    overflow-y:auto;
+}
+
+h1{
+    font-size:32px;
+    margin-bottom:25px;
+    color:#6b21a8;
+}
+
+/* PRODUCTOS */
+.product-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(230px,1fr));
+    gap:25px;
+}
+
+.card{
+    background:white;
+    padding:20px;
+    border-radius:15px;
+    box-shadow:0 6px 15px rgba(0,0,0,0.08);
+}
+
+.card h3{
+    font-size:18px;
+    margin-bottom:10px;
+    color:#7e22ce;
+}
+
+.card button{
+    margin-top:10px;
+    width:100%;
+    padding:10px;
+    background:#a855f7;
+    color:white;
+    border:none;
+    border-radius:10px;
+    cursor:pointer;
+}
+
+/* CARRITO */
+.carrito-item{
+    background:white;
+    padding:15px;
+    margin-bottom:15px;
+    border-radius:12px;
+}
+
+/* TOKEN BOX */
+.token-box{
+    background:#ede9fe;
+    padding:15px;
+    border-radius:12px;
+    margin-bottom:15px;
+    color:#4c1d95;
+    font-weight:bold;
+}
+
+/* CHAT */
+.chat-box{
+    background:white;
+    height:400px;
+    overflow-y:auto;
+    padding:20px;
+    border-radius:15px;
+    margin-bottom:15px;
+}
+
+.mensaje{
+    margin-bottom:12px;
+    padding:10px 15px;
+    border-radius:20px;
+    max-width:70%;
+    font-size:16px;
+    white-space:pre-line;
+}
+
+.usuario{
+    background:#a855f7;
+    color:white;
+    margin-left:auto;
+}
+
+.bot{
+    background:#ede9fe;
+    color:#4c1d95;
+}
+
+.escribiendo{
+    font-style:italic;
+    opacity:0.7;
+}
+
+.chat-input{
+    display:flex;
+}
+
+.chat-input input{
+    flex:1;
+    padding:12px;
+    font-size:16px;
+    border-radius:10px 0 0 10px;
+    border:1px solid #ddd;
+}
+
+.chat-input button{
+    padding:12px;
+    font-size:16px;
+    border:none;
+    background:#a855f7;
+    color:white;
+    border-radius:0 10px 10px 0;
+}
+</style>
+</head>
+
+<body>
+
+<div class="sidebar">
+    <h2>🧸 Peluches Chidos</h2>
+    <button onclick="mostrarSeccion('productos')">Productos</button>
+    <button onclick="mostrarSeccion('carrito')">Carrito</button>
+    <button onclick="mostrarSeccion('chat')">Ayuda por Chat</button>
+</div>
+
+<div class="content">
+
+<div id="productos">
+    <h1>Nuestros Peluches</h1>
+    <div class="product-grid" id="listaProductos"></div>
+</div>
+
+<div id="carrito" style="display:none;">
+    <h1>Tu Carrito</h1>
+
+    <div id="tokenContainer"></div>
+
+    <div id="listaCarrito"></div>
+    <h2>Total: $<span id="totalCarrito">0</span></h2>
+    <button onclick="comprar()">Comprar</button>
+</div>
+
+<div id="chat" style="display:none;">
+    <h1>Chat de Ayuda</h1>
+    <div class="chat-box" id="chatBox"></div>
+    <div class="chat-input">
+        <input type="text" id="mensaje" placeholder="Escribe tu mensaje...">
+        <button onclick="enviarMensaje()">Enviar</button>
+    </div>
+</div>
+
+</div>
+
+<script>
+
+/* NAVEGACIÓN */
+function mostrarSeccion(id){
+    document.getElementById("productos").style.display="none";
+    document.getElementById("carrito").style.display="none";
+    document.getElementById("chat").style.display="none";
+    document.getElementById(id).style.display="block";
+}
+
+/* PRODUCTOS */
+const productos = [
+{nombre:"Osito Cariñosito", tamaño:"Pequeño (20cm)", precio:120},
+{nombre:"Nutria", tamaño:"Mediano (45cm)", precio:250},
+{nombre:"Gato Lucifer", tamaño:"Grande (90cm)", precio:550},
+{nombre:"Peluche Stitch", tamaño:"Pequeño (30cm)", precio:180},
+{nombre:"Peluche Minion", tamaño:"Grande (90cm)", precio:520},
+{nombre:"Hello Kitty", tamaño:"Pequeño (20cm)", precio:150},
+{nombre:"My Melody", tamaño:"Mediano (60cm)", precio:320},
+{nombre:"Pikachu", tamaño:"Pequeño (35cm)", precio:200},
+{nombre:"Snoopy", tamaño:"Grande (80cm)", precio:580},
+{nombre:"Conejito Blanco", tamaño:"Pequeño (18cm)", precio:110},
+{nombre:"Peluche Igor", tamaño:"Mediano (35cm)", precio:260},
+{nombre:"Osito Panda", tamaño:"Grande (65cm)", precio:600},
+{nombre:"Peluche Dinosaurio", tamaño:"Mediano (40cm)", precio:350},
+{nombre:"Peluche Unicornio", tamaño:"Grande (98cm)", precio:590},
+{nombre:"Capibara", tamaño:"Pequeño (22cm)", precio:170},
+{nombre:"Peluche Totoro", tamaño:"Grande (60cm)", precio:560},
+{nombre:"Gatito Negro", tamaño:"Pequeño (20cm)", precio:140},
+{nombre:"Peluche Lotso", tamaño:"Mediano (38cm)", precio:300},
+{nombre:"Pou", tamaño:"Mediano (40cm)", precio:340},
+{nombre:"Peluche Corazon", tamaño:"Grande (70cm)", precio:600},
+];
+
+const listaProductos = document.getElementById("listaProductos");
+
+productos.forEach((p,index)=>{
+    listaProductos.innerHTML+=`
+        <div class="card">
+            <h3>${p.nombre}</h3>
+            <p>${p.tamaño}</p>
+            <p><strong>$${p.precio}</strong></p>
+            <button onclick="agregarCarrito(${index})">Agregar al carrito</button>
+        </div>
+    `;
+});
+
+/* CARRITO + TOKEN */
+let carrito = [];
+let tokenCompra = null;
+
+function agregarCarrito(index){
+    carrito.push(productos[index]);
+
+    if(tokenCompra === null){
+        tokenCompra = Math.floor(1000 + Math.random()*9000);
+    }
+
+    actualizarCarrito();
+}
+
+function actualizarCarrito(){
+    const listaCarrito = document.getElementById("listaCarrito");
+    const totalCarrito = document.getElementById("totalCarrito");
+    const tokenContainer = document.getElementById("tokenContainer");
+
+    listaCarrito.innerHTML = "";
+    let total = 0;
+
+    carrito.forEach(p=>{
+        total += p.precio;
+        listaCarrito.innerHTML += `
+            <div class="carrito-item">
+                <strong>${p.nombre}</strong><br>
+                ${p.tamaño}<br>
+                $${p.precio}
+            </div>
+        `;
+    });
+
+    totalCarrito.textContent = total;
+
+    if(tokenCompra !== null){
+        tokenContainer.innerHTML = `
+            <div class="token-box">
+                🔐 Tu token de compra es: ${tokenCompra}
+            </div>
+        `;
+    } else {
+        tokenContainer.innerHTML = "";
+    }
+}
+
+function comprar(){
+    if(carrito.length === 0){
+        alert("Tu carrito está vacío 🛒");
+        return;
+    }
+
+    let tokenIngresado = prompt("Ingresa tu token de compra:");
+
+    if(tokenIngresado == tokenCompra){
+        let total = carrito.reduce((acc,p)=>acc+p.precio,0);
+        alert("Compra realizada con éxito 💸\nTotal pagado: $" + total);
+
+        carrito = [];
+        tokenCompra = null;
+        actualizarCarrito();
+    } else {
+        alert("Token incorrecto ❌ Compra cancelada.");
+    }
+}
+
+/* CHAT (igual que lo tenías, no lo toqué) */
+
+function enviarMensaje(){
+    const input=document.getElementById("mensaje");
+    const texto=input.value.trim();
+    if(texto==="") return;
+
+    agregarMensaje(texto,"usuario");
+    input.value="";
+    mostrarEscribiendo();
+
+    setTimeout(()=>{
+        quitarEscribiendo();
+        responderBot(texto);
+    },1000);
+}
+
+function agregarMensaje(texto,tipo){
+    const chatBox=document.getElementById("chatBox");
+    chatBox.innerHTML+=`<div class="mensaje ${tipo}">${texto}</div>`;
+    chatBox.scrollTop=chatBox.scrollHeight;
+}
+
+function mostrarEscribiendo(){
+    const chatBox=document.getElementById("chatBox");
+    chatBox.innerHTML+=`<div class="mensaje bot escribiendo" id="typing">Escribiendo...</div>`;
+    chatBox.scrollTop=chatBox.scrollHeight;
+}
+
+function quitarEscribiendo(){
+    const typing=document.getElementById("typing");
+    if(typing) typing.remove();
+}
+
+function responderBot(texto){
+    texto = texto.toLowerCase();
+    let respuesta = "No entendí tu pregunta 🧸";
+
+    // SALUDO
+    if(texto.includes("hola")){
+        respuesta = "¡Hola! Bienvenid@ a Peluches Chidos. ¿Qué peluche estás buscando?";
+    }
+
+    // PRECIO GENERAL
+    else if(texto.includes("precio")){
+        let precios = productos.map(p => p.precio);
+        let min = Math.min(...precios);
+        let max = Math.max(...precios);
+        respuesta = `Nuestros peluches cuestan entre $${min} y $${max} pesos`;
+    }
+
+    // ENVÍO
+    else if(texto.includes("envio")){
+        respuesta = "Sí, hacemos envíos a todo México. Tardan de 3 a 5 días hábiles 🚚";
+    }
+
+    // MÉTODOS DE PAGO
+    else if(texto.includes("pago") || texto.includes("tarjeta")){
+        respuesta = "Aceptamos tarjeta 💳, transferencia bancaria y pago en efectivo.";
+    }
+
+    // CUÁNTOS PRODUCTOS
+    else if(texto.includes("cuantos") || texto.includes("productos")){
+        respuesta = `Tenemos ${productos.length} peluches disponibles 🧸✨`;
+    }
+
+    // MÁS CARO
+    else if(texto.includes("más caro")){
+        let masCaro = productos.reduce((a,b)=> a.precio>b.precio?a:b);
+        respuesta = `El peluche más caro es ${masCaro.nombre} (${masCaro.tamaño}) y cuesta $${masCaro.precio} 💎`;
+    }
+
+    // MÁS BARATO
+    else if(texto.includes("más barato")){
+        let masBarato = productos.reduce((a,b)=> a.precio<b.precio?a:b);
+        respuesta = `El peluche más barato es ${masBarato.nombre} (${masBarato.tamaño}) y cuesta $${masBarato.precio}`;
+    }
+
+    // SUGERENCIAS
+    else if(texto.includes("sugi")){
+        let copia = [...productos];
+        copia.sort(()=>0.5 - Math.random());
+        let sugeridos = copia.slice(0,3);
+
+        respuesta = "Te recomiendo estos peluches 🧸:\n";
+        sugeridos.forEach(p=>{
+            respuesta += `• ${p.nombre} - $${p.precio}\n`;
+        });
+    }
+
+    // TAMAÑO GRANDE
+    else if(texto.includes("grande")){
+        let grandes = productos.filter(p => p.tamaño.toLowerCase().includes("grande"));
+        respuesta = "Peluches grandes disponibles:\n";
+        grandes.forEach(p=>{
+            respuesta += `• ${p.nombre} - $${p.precio}\n`;
+        });
+    }
+
+    // TAMAÑO PEQUEÑO
+    else if(texto.includes("pequeño")){
+        let pequeños = productos.filter(p => p.tamaño.toLowerCase().includes("pequeño"));
+        respuesta = "Peluches pequeños disponibles:\n";
+        pequeños.forEach(p=>{
+            respuesta += `• ${p.nombre} - $${p.precio}\n`;
+        });
+    }
+
+    // TAMAÑO MEDIANO
+    else if(texto.includes("mediano")){
+        let medianos = productos.filter(p => p.tamaño.toLowerCase().includes("mediano"));
+        respuesta = "Peluches medianos disponibles:\n";
+        medianos.forEach(p=>{
+            respuesta += `• ${p.nombre} - $${p.precio}\n`;
+        });
+    }
+
+    // BUSCAR POR NOMBRE
+    else {
+        let encontrado = productos.find(p =>
+            texto.includes(p.nombre.toLowerCase())
+        );
+
+        if(encontrado){
+            respuesta = `${encontrado.nombre} 🧸\n${encontrado.tamaño}\nPrecio: $${encontrado.precio}`;
+        }
+    }
+
+    agregarMensaje(respuesta,"bot");
+}
+
+
+</script>
+</body>
+</html>
