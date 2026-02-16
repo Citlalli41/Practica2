@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Peluches Chidos | Tienda Oficial</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        :root { --morado: #644780; --oscuro: #927cac; --fondo: #967f9c; --exito: #78b85f; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--fondo); margin: 0; padding-bottom: 50px; overflow-x: hidden; }
+        
+        header { background: white; padding: 15px; display: flex; align-items: center; border-bottom: 5px solid var(--morado); position: sticky; top: 0; z-index: 1000; }
+        .menu-toggle { font-size: 24px; cursor: pointer; background: none; border: none; color: var(--morado); margin-right: 15px; }
+        header h1 { font-size: 1.2rem; margin: 0; flex: 1; text-align: center; }
+
+        #menu-lateral { position: fixed; left: -300px; top: 0; width: 280px; height: 100%; background: white; z-index: 2005; transition: 0.4s; padding: 20px; box-shadow: 5px 0 20px rgba(0,0,0,0.1); }
+        #menu-lateral.open { left: 0; }
+        .nav-item { padding: 15px; border-bottom: 1px solid #eee; cursor: pointer; font-weight: bold; color: #444; display: flex; align-items: center; gap: 10px; }
+        .nav-item:hover { background: #f8f0ff; color: var(--morado); }
+
+        .seccion { display: none; }
+        .seccion.active { display: block; }
+
+        .container { max-width: 1200px; margin: 20px auto; padding: 20px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 15px; }
+        .card { background: white; border-radius: 12px; padding: 15px; text-align: center; border: 1px solid #ddd; transition: 0.3s; }
+        .card:hover { border-color: var(--morado); transform: translateY(-3px); }
+
+        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: none; z-index: 2000; }
+
+        .carrito-container { background: white; border-radius: 20px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        .item-carrito { background: #f9f9f9; padding: 10px; border-radius: 8px; margin-bottom: 8px; border-left: 4px solid var(--morado); display: flex; justify-content: space-between; align-items: center; }
+        
+        .metodo-pago { border: 2px solid #eee; padding: 10px; border-radius: 10px; margin-top: 8px; cursor: pointer; }
+        .metodo-pago.selected { border-color: var(--exito); background: #f1f8f1; }
+        .btn-main { background: var(--morado); color: white; border: none; padding: 12px; width: 100%; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+
+        #modal-2fa { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 3000; justify-content: center; align-items: center; }
+        .modal-content { background: white; padding: 25px; border-radius: 20px; text-align: center; width: 320px; }
+
+        #chat-window-sec { background: white; border-radius: 20px; border: 3px solid var(--morado); height: 500px; display: flex; flex-direction: column; max-width: 500px; margin: auto; overflow: hidden; }
+        #chat-box-sec { flex: 1; overflow-y: auto; padding: 15px; font-size: 0.85em; display: flex; flex-direction: column; gap: 8px; background: #fdfbff; }
+        .msg { padding: 8px 12px; border-radius: 12px; max-width: 85%; }
+        .msg-u { align-self: flex-end; background: var(--morado); color: white; }
+        .msg-a { align-self: flex-start; background: #eee; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <button class="menu-toggle" onclick="toggleMenu()">☰</button>
+        <div style="font-size: 25px;">🧸</div>
+        <h1>Peluches Chidos</h1>
+        <div style="width: 40px;"></div>
+    </header>
+
+    <div class="overlay" id="overlay-bg" onclick="toggleMenu()"></div>
+
+    <nav id="menu-lateral">
+        <h2 style="color:var(--morado); margin-top:0;">Menú</h2>
+        <div class="nav-item" onclick="cambiarSeccion('sec-catalogo')">📦 Catálogo de Peluches</div>
+        <div class="nav-item" onclick="cambiarSeccion('sec-carrito')">🛒 Mi Pedido (<span id="menu-cart-count">0</span>)</div>
+        <div class="nav-item" onclick="cambiarSeccion('sec-chat')">💬 Chat de Ayuda</div>
+    </nav>
+
+    <div id="sec-catalogo" class="seccion active">
+        <div class="container">
+            <h2 style="text-align:center; color: var(--morado);">Elige tu Peluche</h2>
+            <div class="grid" id="grid"></div>
+        </div>
+    </div>
+
+    <div id="sec-carrito" class="seccion">
+        <div class="container">
+            <div class="carrito-container">
+                <h2 style="color:var(--morado);">Tu Carrito</h2>
+                <div id="lista-carrito"></div>
+                <hr>
+                <h3>Total: <span id="total-precio">$0.00</span></h3>
+                <p><b>Selecciona Método de Pago:</b></p>
+                <div class="metodo-pago" onclick="selMet('Mercado Pago', this)">🔵 Mercado Pago</div>
+                <div class="metodo-pago" onclick="selMet('Apple Pay', this)">🍎 Apple Pay</div>
+                <div class="metodo-pago" onclick="selMet('PayPal', this)">🅿️ PayPal</div>
+                <button class="btn-main" id="btn-comprar" style="display:none;" onclick="abrir2FA()">GENERAR COMPRA</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="sec-chat" class="seccion">
+        <div class="container">
+            <div id="chat-window-sec">
+                <div style="background:var(--morado); color:white; padding:15px; text-align:center; font-weight:bold;">🧸 Asistente Oso</div>
+                <div id="chat-box-sec"></div>
+                <div style="padding:15px; display:flex; background:#f4f4f4; border-top:1px solid #ddd;">
+                    <input type="text" id="chat-input-sec" placeholder="¿Qué peluche buscas?" style="flex:1; border-radius:20px; border:1px solid #ccc; padding:12px;">
+                    <button onclick="enviarMensaje()" style="background:var(--morado); color:white; border:none; border-radius:50%; width:45px; height:45px; margin-left:8px; cursor:pointer;">💬</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-2fa">
+        <div class="modal-content" id="modal-dinamico">
+            <h3 style="color:var(--morado);">Verificación de Seguridad</h3>
+            <p style="font-size:0.8rem;">Escanea con <b>Google Authenticator</b> e ingresa el código.</p>
+            <div id="qrcode" style="display:flex; justify-content:center; margin:15px 0;"></div>
+            <input type="text" inputmode="numeric" id="pin-input" autocomplete="off" placeholder="· · · · · ·" 
+                   style="width:100%; text-align:center; font-size:1.8rem; padding:10px; border:2px solid #ddd; border-radius:10px;">
+            <button class="btn-main" onclick="procesarPagoDefinitivo()">CONFIRMAR CARGO</button>
+            <p onclick="cerrar2FA()" style="color:#999; cursor:pointer; margin-top:15px; font-size:0.8rem;">Cancelar</p>
+        </div>
+    </div>
+
+    <script>
+        const productos = [
+            {n:"Osito Cariñosito Chico", p:120}, {n:"Nutria Mediana", p:250}, {n:"Gato Lucifer Grande", p:550},
+            {n:"Peluche Stitch Chico", p:180}, {n:"Minion Grande", p:520}, {n:"Hello Kitty Chica", p:150},
+            {n:"Pikachu Mediano", p:200}, {n:"Capibara Chico", p:170}, {n:"Pou Mediano", p:340}, {n:"Corazón Grande", p:600},
+            {n:"Cerdito Chico", p:150}, {n:"Panda Grande", p:480}, {n:"Axolote Mediano", p:230}, {n:"Totoro Mediano", p:390},
+            {n:"Conejito Chico", p:110}, {n:"Dinosaurio Mediano", p:290}, {n:"Igor Chico", p:180}, {n:"Snoopy Mediano", p:220},
+            {n:"Gato Negro Chico", p:140}, {n:"Koala Mediano", p:210}
+        ];
+
+        let cart = []; let met = "";
+
+        const g = document.getElementById("grid");
+        productos.forEach((p, i) => {
+            g.innerHTML += `<div class="card">
+                <b>${p.n}</b><p style="color:var(--morado)">$${p.p}</p>
+                <button onclick="add(${i})" class="btn-main" style="padding:6px;">Añadir</button>
+            </div>`;
+        });
+
+        function toggleMenu() {
+            const side = document.getElementById("menu-lateral");
+            const over = document.getElementById("overlay-bg");
+            side.classList.toggle("open");
+            over.style.display = side.classList.contains("open") ? "block" : "none";
+        }
+
+        function cambiarSeccion(id) {
+            document.querySelectorAll('.seccion').forEach(s => s.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            toggleMenu();
+            window.scrollTo(0,0);
+        }
+
+        function add(idx) {
+            cart.push({ id: Date.now(), n: productos[idx].n, p: productos[idx].p });
+            upd();
+        }
+
+        function del(id) { cart = cart.filter(x => x.id !== id); upd(); }
+
+        function upd() {
+            const l = document.getElementById("lista-carrito");
+            let t = 0; 
+            l.innerHTML = "";
+            cart.forEach(x => { 
+                t += x.p; 
+                l.innerHTML += `<div class="item-carrito">${x.n} ($${x.p}) <button onclick="del(${x.id})" style="border:none; background:none; cursor:pointer;">🗑️</button></div>`; 
+            });
+            document.getElementById("menu-cart-count").innerText = cart.length;
+            document.getElementById("total-precio").innerText = `$${t.toFixed(2)}`;
+        }
+
+        function selMet(m, el) {
+            document.querySelectorAll('.metodo-pago').forEach(x => x.classList.remove('selected'));
+            el.classList.add('selected'); met = m;
+            document.getElementById("btn-comprar").style.display = "block";
+        }
+        
+        function abrir2FA() {
+            if (cart.length === 0) return alert("El carrito está vacío");
+            document.getElementById("qrcode").innerHTML = "";
+            new QRCode(document.getElementById("qrcode"), { 
+                text: "otpauth://totp/PeluchesChidos:Compra?secret=ABC123XYZ&issuer=PeluchesChidos", 
+                width: 150, 
+                height: 150 
+            });
+            document.getElementById("modal-2fa").style.display = "flex";
+        }
+
+        function procesarPagoDefinitivo() {
+            const pin = document.getElementById("pin-input").value;
+            if (pin.length < 4) return alert("Escribe el código de 6 dígitos de tu app.");
+            const total = document.getElementById("total-precio").innerText;
+            
+            document.getElementById("modal-dinamico").innerHTML = `
+                <div style="font-size:50px;">✅</div>
+                <h2 style="color:var(--exito);">¡PAGO AUTORIZADO!</h2>
+                <div style="text-align:left; background:#f4f4f4; padding:15px; border-radius:10px; font-family:monospace; font-size:0.8rem;">
+                    Folio: PL-${Math.floor(Math.random()*899999 + 100000)}<br>
+                    Método: ${met}<br>
+                    Monto: ${total}<br>
+                </div>
+                <button class="btn-main" onclick="location.reload()">ACEPTAR</button>
+            `;
+            cart = []; upd();
+        }
+
+        function enviarMensaje() {
+            const i = document.getElementById("chat-input-sec");
+            const b = document.getElementById("chat-box-sec");
+            if(!i.value) return;
+
+            b.innerHTML += `<div class="msg msg-u">${i.value}</div>`;
+            const userText = i.value.toLowerCase();
+            i.value = "";
+            
+            let res = "¡No te he entendido! 🧸";
+
+            if(userText.includes("hola")) {
+                res = "¡Hola! ¿Buscabas algún peluche en especial?";
+            } else if(userText.includes("precio")) {
+                res = "Nuestros precios van de $110 a $600.";
+            } else if(userText.includes("tamaño") || userText.includes("medida")) {
+                res = "Nuestros tamaños van de Chico, Mediano y Grande.";
+            } else if(userText.includes("recomenda")) {
+                res = "Nuestra recomendación sería el más pedido: el peluche Totoro.";
+            } else if(userText.includes("envi")) {
+                res = "Nuestros envíos son en toda Ciudad de México.";
+            } else if(userText.includes("gracias")) {
+                res = "Espero haber sido de gran ayuda y volver a verte pronto ❤️.";
+            }
+
+            setTimeout(() => {
+                b.innerHTML += `<div class="msg msg-a">🌐: ${res}</div>`;
+                b.scrollTop = b.scrollHeight;
+            }, 600);
+        }
+
+        function cerrar2FA() { document.getElementById("modal-2fa").style.display = "none"; }
+    </script>
+</body>
+</html>
